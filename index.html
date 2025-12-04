@@ -14,10 +14,10 @@
 
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: linear-gradient(135deg, #0a0f1a 0%, #111827 50%, #0d1321 100%);
-            color: #e2e8f0;
-            min-height: 100vh;
-            line-height: 1.6;
+    background: #749BC2 !important;
+    color: #000; 
+    min-height: 100vh;
+    line-height: 1.6;
         }
 
         .container {
@@ -35,19 +35,18 @@
         }
 
         .header h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #2563eb 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #2D4059 !important;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
             background-clip: text;
-            margin-bottom: 0.5rem;
-            letter-spacing: -0.02em;
         }
 
         .header .subtitle {
             font-size: 1rem;
-            color: #64748b;
+            color: #2D4059;
             font-weight: 400;
             letter-spacing: 0.1em;
         }
@@ -86,9 +85,13 @@
         }
 
         .tab-btn.active {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-            color: white;
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+            
+    background: #4682A9 !important;
+    color: white !important;
+    box-shadow: none;
+    border: 1px solid black;
+
+
         }
 
         .tab-icon {
@@ -354,18 +357,18 @@
     <div class="container">
         <header class="header">
             <h1>Ujani HydroAnalytics System</h1>
-            <p class="subtitle">Clustering • Anomaly Detection • Forecasting Prototype</p>
+            <p class="subtitle">Hydrological Insights from Ujani Catchment Rainfall: ML-Based Clustering, Anomaly Detection & Forecasting</p>
         </header>
 
         <nav class="tabs">
             <button class="tab-btn active" onclick="switchTab('clustering')">
-                <span class="tab-icon">📊</span> Clustering
+                <span class="tab-icon"></span> Clustering
             </button>
             <button class="tab-btn" onclick="switchTab('anomalies')">
-                <span class="tab-icon">⚠️</span> Anomalies
+                <span class="tab-icon"></span> Anomalies
             </button>
             <button class="tab-btn" onclick="switchTab('forecasting')">
-                <span class="tab-icon">📈</span> Forecasting
+                <span class="tab-icon"></span> Forecasting
             </button>
         </nav>
 
@@ -541,7 +544,12 @@
             return;
         }
 
-        const clusterColors = { 'Low': '#22c55e', 'Normal': '#3b82f6', 'High': '#ef4444' };
+        const clusterColors = { 
+    'Low': '#91C8E4', 
+    'Normal': '#91C8E4', 
+    'High': '#91C8E4' 
+};
+
         // group by cluster label (ensure label strings exist)
         const labels = Array.from(new Set(clustersData.map(d => (d.cluster || 'Unknown'))));
         const traces = labels.map(cluster => {
