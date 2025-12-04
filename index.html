@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ujani HydroAnalytics System</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0a0f1a 0%, #111827 50%, #0d1321 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header Styles */
+        .header {
+            text-align: center;
+            padding: 2rem 0 3rem;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #2563eb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .header .subtitle {
+            font-size: 1rem;
+            color: #64748b;
+            font-weight: 400;
+            letter-spacing: 0.1em;
+        }
+
+        /* Tab Navigation */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 0.5rem;
+            border-radius: 12px;
+            border: 1px solid rgba(59, 130, 246, 0.15);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            border: none;
+            background: transparent;
+            color: #94a3b8;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .tab-btn:hover {
+            color: #e2e8f0;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .tab-icon {
+            font-size: 1.1rem;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(59, 130, 246, 0.15);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #f1f5f9;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(180deg, #3b82f6, #60a5fa);
+            border-radius: 2px;
+        }
+
+        /* Grid Layout */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            background: rgba(10, 15, 26, 0.5);
+            border-radius: 12px;
+            padding: 1rem;
+            min-height: 350px;
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+        }
+
+        th {
+            background: rgba(59, 130, 246, 0.1);
+            color: #93c5fd;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        tr:hover {
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        /* Forecast Card */
+        .forecast-card {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.1) 100%);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .forecast-value {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .forecast-label {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .quantile-range {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .quantile-item {
+            text-align: center;
+        }
+
+        .quantile-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+
+        .quantile-label {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        /* Cluster Badge */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-low {
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+        }
+
+        .badge-normal {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+        }
+
+        .badge-high {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        /* Anomaly indicators */
+        .anomaly-z {
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        .anomaly-iso {
+            color: #f97316;
+            font-weight: 600;
+        }
+
+        /* Error Message */
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            color: #fca5a5;
+        }
+
+        .error-message h3 {
+            color: #f87171;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Loading State */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+            color: #64748b;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(59, 130, 246, 0.2);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 1.75rem;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Ujani HydroAnalytics System</h1>
+            <p class="subtitle">Clustering • Anomaly Detection • Forecasting Prototype</p>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab-btn active" onclick="switchTab('clustering')">
+                <span class="tab-icon">📊</span> Clustering
+            </button>
+            <button class="tab-btn" onclick="switchTab('anomalies')">
+                <span class="tab-icon">⚠️</span> Anomalies
+            </button>
+            <button class="tab-btn" onclick="switchTab('forecasting')">
+                <span class="tab-icon">📈</span> Forecasting
+            </button>
+        </nav>
+
+        <!-- Clustering Tab -->
+        <div id="clustering" class="tab-content active">
+            <div class="card">
+                <h3 class="card-title">Rainfall Time Series by Cluster</h3>
+                <div id="cluster-timeseries" class="chart-container">
+                    <div class="loading"><div class="spinner"></div>Loading data...</div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h3 class="card-title">PCA Scatter Plot</h3>
+                    <div id="cluster-pca" class="chart-container">
+                        <div class="loading"><div class="spinner"></div>Loading data...</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">Latest Cluster Data</h3>
+                    <div id="cluster-table" class="table-container">
+                        <div class="loading"><div class="spinner"></div>Loading data...</div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="downloadCSV('clusters')">
+                ⬇️ Download clusters.csv
+            </button>
+        </div>
+
+        <!-- Anomalies Tab -->
+        <div id="anomalies" class="tab-content">
+            <div class="card">
+                <h3 class="card-title">Anomaly Detection Timeline</h3>
+                <div id="anomaly-timeseries" class="chart-container">
+                    <div class="loading"><div class="spinner"></div>Loading data...</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">Top Anomalies</h3>
+                <div id="anomaly-table" class="table-container">
+                    <div class="loading"><div class="spinner"></div>Loading data...</div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="downloadCSV('anomalies')">
+                ⬇️ Download anomalies.csv
+            </button>
+        </div>
+
+        <!-- Forecasting Tab -->
+        <div id="forecasting" class="tab-content">
+            <div class="card">
+                <h3 class="card-title">Observed vs Predicted Rainfall</h3>
+                <div id="forecast-timeseries" class="chart-container">
+                    <div class="loading"><div class="spinner"></div>Loading data...</div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card forecast-card">
+                    <h3 class="card-title" style="justify-content: center;">Latest Forecast</h3>
+                    <div id="forecast-card-content">
+                        <div class="loading"><div class="spinner"></div>Loading...</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">Recent Forecast Data</h3>
+                    <div id="forecast-table" class="table-container">
+                        <div class="loading"><div class="spinner"></div>Loading data...</div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="downloadCSV('forecasts')">
+                ⬇️ Download forecasts.csv
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Global data storage
+        let clustersData = null;
+        let anomaliesData = null;
+        let forecastsData = null;
+
+        // Plotly dark theme config
+        const plotlyLayout = {
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(10, 15, 26, 0.8)',
+            font: { color: '#94a3b8', family: 'Segoe UI, system-ui, sans-serif' },
+            xaxis: {
+                gridcolor: 'rgba(59, 130, 246, 0.1)',
+                linecolor: 'rgba(59, 130, 246, 0.2)',
+                tickfont: { color: '#64748b' }
+            },
+            yaxis: {
+                gridcolor: 'rgba(59, 130, 246, 0.1)',
+                linecolor: 'rgba(59, 130, 246, 0.2)',
+                tickfont: { color: '#64748b' }
+            },
+            margin: { l: 50, r: 30, t: 30, b: 50 },
+            legend: { bgcolor: 'rgba(0,0,0,0)', font: { color: '#94a3b8' } }
+        };
+
+        const plotlyConfig = { responsive: true, displayModeBar: false };
+
+        // Tab switching
+        function switchTab(tabId) {
+            // Update buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.closest('.tab-btn').classList.add('active');
+
+            // Update content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+
+            // Load data if needed
+            if (tabId === 'clustering' && !clustersData) loadClustersData();
+            if (tabId === 'anomalies' && !anomaliesData) loadAnomaliesData();
+            if (tabId === 'forecasting' && !forecastsData) loadForecastsData();
+        }
+
+        // Error display helper
+        function showError(elementId, message) {
+            document.getElementById(elementId).innerHTML = `
+                <div class="error-message">
+                    <h3>⚠️ Data Not Available</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+
+        // Clustering Data
+        async function loadClustersData() {
+    try {
+        const response = await fetch('frontend_data/clusters.json');
+        if (!response.ok) throw new Error('File not found');
+        const json = await response.json();
+        // Normalise: accept either { data: [...] } or [...] 
+        const payload = Array.isArray(json) ? json : (json.data || []);
+        // map to expected fields if needed (make robust)
+        // try detect likely keys for rainfall, date, pc1, pc2, cluster
+        clustersData = payload.map(r => ({
+            date: r.date || r.Date || r.date_of_input || null,
+            rainfall: (r.basin_total ?? r.rainfall ?? r.rain ?? 0) + 0,
+            cluster: (r.regime || r.cluster || r.regime_label || '').toString(),
+            pc1: Number(r.pc1 ?? r.PC1 ?? r.pc_1 ?? 0),
+            pc2: Number(r.pc2 ?? r.PC2 ?? r.pc_2 ?? 0)
+        })).filter(d => d.date);
+        renderClustersCharts();
+    } catch (error) {
+        showError('cluster-timeseries', 'Could not load clusters.json. Ensure the file exists in frontend_data/');
+        showError('cluster-pca', 'Could not load clusters.json');
+        showError('cluster-table', 'Could not load clusters.json');
+        console.error(error);
+    }
+}
+
+
+        function renderClustersCharts(){
+    try {
+        if (!clustersData || !clustersData.length) {
+            console.warn("clustersData empty or missing:", clustersData);
+            showError('cluster-timeseries', 'clusters.json loaded but contains no rows or date field mismatch');
+            showError('cluster-pca', 'clusters.json loaded but contains no rows');
+            document.getElementById('cluster-table').innerHTML = '<div class="loading">No cluster rows to display</div>';
+            return;
+        }
+
+        const clusterColors = { 'Low': '#22c55e', 'Normal': '#3b82f6', 'High': '#ef4444' };
+        // group by cluster label (ensure label strings exist)
+        const labels = Array.from(new Set(clustersData.map(d => (d.cluster || 'Unknown'))));
+        const traces = labels.map(cluster => {
+            const filtered = clustersData.filter(d => (d.cluster || 'Unknown') === cluster);
+            return {
+                x: filtered.map(d => d.date),
+                y: filtered.map(d => d.rainfall),
+                mode: 'markers+lines',
+                name: cluster,
+                marker: { color: clusterColors[cluster] || '#9fb3d9', size: 6 },
+                line: { color: clusterColors[cluster] || '#9fb3d9', width: 2 }
+            };
+        });
+document.getElementById("cluster-timeseries").innerHTML = "";
+document.getElementById("cluster-pca").innerHTML = "";
+document.getElementById("cluster-table").innerHTML = "";
+
+        Plotly.newPlot('cluster-timeseries', traces, {
+            ...plotlyLayout,
+            title: { text: 'Rainfall Colored by Cluster', font: { color: '#e2e8f0', size: 14 } },
+            yaxis: { ...plotlyLayout.yaxis, title: 'Rainfall (mm)' }
+        }, plotlyConfig);
+
+        // PCA scatter (if pc1/pc2 present)
+        const hasPC = clustersData.some(d => (d.pc1 !== undefined && d.pc2 !== undefined));
+        if (hasPC) {
+            const pcLabels = Array.from(new Set(clustersData.map(d => (d.cluster || 'Unknown'))));
+            const pcTraces = pcLabels.map(cluster => {
+                const filtered = clustersData.filter(d => (d.cluster || 'Unknown') === cluster);
+                return {
+                    x: filtered.map(d => d.pc1),
+                    y: filtered.map(d => d.pc2),
+                    mode: 'markers',
+                    name: cluster,
+                    marker: { color: clusterColors[cluster] || '#9fb3d9', size: 10, opacity: 0.8 }
+                };
+            });
+            Plotly.newPlot('cluster-pca', pcTraces, {
+                ...plotlyLayout,
+                xaxis: { ...plotlyLayout.xaxis, title: 'PC1' },
+                yaxis: { ...plotlyLayout.yaxis, title: 'PC2' }
+            }, plotlyConfig);
+        } else {
+            document.getElementById('cluster-pca').innerHTML = '<div class="loading">PC1/PC2 not available in clusters.json</div>';
+        }
+
+        // Table - show last 10 rows (safe)
+        const latestRows = clustersData.slice(-10).reverse();
+        document.getElementById('cluster-table').innerHTML = `
+            <table>
+                <thead>
+                    <tr><th>Date</th><th>Rainfall</th><th>Cluster</th><th>PC1</th><th>PC2</th></tr>
+                </thead>
+                <tbody>
+                    ${latestRows.map(row => `
+                        <tr>
+                            <td>${row.date || ''}</td>
+                            <td>${(row.rainfall===null||row.rainfall===undefined)? '': Number(row.rainfall).toFixed(1) + ' mm'}</td>
+                            <td><span class="badge ${row.cluster ? 'badge-' + row.cluster.toLowerCase() : ''}">${row.cluster || ''}</span></td>
+                            <td>${row.pc1 !== undefined ? Number(row.pc1).toFixed(2) : ''}</td>
+                            <td>${row.pc2 !== undefined ? Number(row.pc2).toFixed(2) : ''}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+    } catch (e) {
+        console.error("renderClustersCharts error:", e);
+        showError('cluster-timeseries', 'Failed to render clustering charts. See console for details.');
+    }
+}
+        // Anomalies Data
+        async function loadAnomaliesData() {
+    try {
+        const response = await fetch('frontend_data/anomalies.json');
+        if (!response.ok) throw new Error('File not found');
+        const json = await response.json();
+        const payload = Array.isArray(json) ? json : (json.data || []);
+        anomaliesData = payload.map(r => ({
+            date: r.date || r.Date || r.date_of_input || null,
+            rainfall: (r.basin_total ?? r.rainfall ?? r.rain ?? 0) + 0,
+            z_score: Number(r.z_score ?? r.z ?? 0),
+            isolation_score: Number(r.iso_score ?? r.isolation_score ?? r.isolation ?? 0),
+            is_zscore_anomaly: !!(r.z_flag || r.is_zscore_anomaly || (Math.abs(r.z_score ?? r.z ?? 0) > 2.5)),
+            is_isolation_anomaly: !!(r.iso_flag || r.is_isolation_anomaly || (r.iso_score && r.iso_score < -0.1))
+        })).filter(d => d.date);
+        renderAnomaliesCharts();
+    } catch (error) {
+        showError('anomaly-timeseries', 'Could not load anomalies.json. Ensure the file exists in frontend_data/');
+        showError('anomaly-table', 'Could not load anomalies.json');
+        console.error(error);
+    }
+}
+
+        function renderAnomaliesCharts() {
+            // Main time series
+            const mainTrace = {
+                x: anomaliesData.map(d => d.date),
+                y: anomaliesData.map(d => d.rainfall),
+                mode: 'lines+markers',
+                name: 'Rainfall',
+                line: { color: '#3b82f6', width: 2 },
+                marker: { color: '#3b82f6', size: 6 }
+            };
+
+            // Z-score anomalies
+            const zAnomalies = anomaliesData.filter(d => d.is_zscore_anomaly);
+            const zTrace = {
+                x: zAnomalies.map(d => d.date),
+                y: zAnomalies.map(d => d.rainfall),
+                mode: 'markers',
+                name: 'Z-Score Anomaly',
+                marker: { color: '#ef4444', size: 14, symbol: 'circle-open', line: { width: 3 } }
+            };
+
+            // Isolation Forest anomalies
+            const isoAnomalies = anomaliesData.filter(d => d.is_isolation_anomaly);
+            const isoTrace = {
+                x: isoAnomalies.map(d => d.date),
+                y: isoAnomalies.map(d => d.rainfall),
+                mode: 'markers',
+                name: 'Isolation Forest',
+                marker: { color: '#f97316', size: 18, symbol: 'x', line: { width: 2 } }
+            };
+document.getElementById("anomaly-timeseries").innerHTML = "";
+document.getElementById("anomaly-table").innerHTML = "";
+
+            Plotly.newPlot('anomaly-timeseries', [mainTrace, zTrace, isoTrace], {
+                ...plotlyLayout,
+                title: { text: 'Anomaly Detection Results', font: { color: '#e2e8f0', size: 14 } },
+                yaxis: { ...plotlyLayout.yaxis, title: 'Rainfall (mm)' }
+            }, plotlyConfig);
+
+            // Table - sorted by z_score
+            const topAnomalies = [...anomaliesData]
+                .filter(d => d.is_zscore_anomaly || d.is_isolation_anomaly)
+                .sort((a, b) => Math.abs(b.z_score) - Math.abs(a.z_score));
+
+            document.getElementById('anomaly-table').innerHTML = `
+                <table>
+                    <thead>
+                        <tr><th>Date</th><th>Rainfall</th><th>Z-Score</th><th>Isolation</th><th>Type</th></tr>
+                    </thead>
+                    <tbody>
+                        ${topAnomalies.map(row => `
+                            <tr>
+                                <td>${row.date}</td>
+                                <td>${row.rainfall.toFixed(1)} mm</td>
+                                <td class="${row.is_zscore_anomaly ? 'anomaly-z' : ''}">${row.z_score.toFixed(2)}</td>
+                                <td class="${row.is_isolation_anomaly ? 'anomaly-iso' : ''}">${row.isolation_score.toFixed(2)}</td>
+                                <td>
+                                    ${row.is_zscore_anomaly ? '<span class="anomaly-z">Z</span>' : ''}
+                                    ${row.is_isolation_anomaly ? '<span class="anomaly-iso">IF</span>' : ''}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        // Forecasts Data
+        async function loadForecastsData() {
+    try {
+        const response = await fetch('frontend_data/forecasts.json');
+        if (!response.ok) throw new Error('File not found');
+        const json = await response.json();
+        // Accept either {data:[...], latest_forecast: {...}} or an array [...]
+        let payload = Array.isArray(json) ? json : (json.data || []);
+        // Map to expected names and compute latest_forecast if missing
+        const mapped = payload.map(r => ({
+            date: r.date || r.date_of_input || r.Date || null,
+            observed: (r.obs_next_day ?? r.observed ?? r.obs ?? null),
+            predicted: (r.pred_next_day ?? r.predicted ?? r.pred ?? 0) + 0,
+            q10: (r.q10 ?? r.q_10 ?? r.q_low ?? 0) + 0,
+            q50: (r.q50 ?? r.q_50 ?? r.q_median ?? r.pred_next_day ?? 0) + 0,
+            q90: (r.q90 ?? r.q_90 ?? r.q_high ?? 0) + 0
+        })).filter(d => d.date);
+        let latest_forecast = null;
+        if (!Array.isArray(json) && json.latest_forecast) {
+            const lf = json.latest_forecast;
+            latest_forecast = {
+                date: lf.date || lf.Date || null,
+                predicted: lf.predicted ?? lf.pred_next_day ?? lf.pred ?? 0,
+                q10: lf.q10 ?? lf.q_10 ?? 0,
+                q90: lf.q90 ?? lf.q_90 ?? 0
+            };
+        } else if (mapped.length) {
+            const last = mapped[mapped.length - 1];
+            latest_forecast = { date: last.date, predicted: last.predicted, q10: last.q10, q90: last.q90 };
+        }
+        forecastsData = { data: mapped, latest_forecast: latest_forecast };
+        renderForecastsCharts();
+    } catch (error) {
+        showError('forecast-timeseries', 'Could not load forecasts.json. Ensure the file exists in frontend_data/');
+        showError('forecast-table', 'Could not load forecasts.json');
+        document.getElementById('forecast-card-content').innerHTML = '<div class="error-message">Data not available</div>';
+        console.error(error);
+    }
+}
+
+        function renderForecastsCharts() {
+    try {
+        if (!forecastsData || !Array.isArray(forecastsData.data) || forecastsData.data.length === 0) {
+            console.warn("forecastsData missing or empty:", forecastsData);
+            showError('forecast-timeseries', 'forecasts.json loaded but contains no usable rows');
+            document.getElementById('forecast-card-content').innerHTML = '<div class="error-message">Forecast data not available</div>';
+            document.getElementById('forecast-table').innerHTML = '<div class="loading">No forecast rows to display</div>';
+            return;
+        }
+
+        const data = forecastsData.data;
+
+        // Build uncertainty band (requires q10 and q90)
+        const q10arr = data.map(d => (d.q10 !== undefined ? d.q10 : null));
+        const q90arr = data.map(d => (d.q90 !== undefined ? d.q90 : null));
+        const hasBand = q10arr.some(v => v !== null) && q90arr.some(v => v !== null);
+
+        const bandTrace = hasBand ? {
+            x: [...data.map(d => d.date), ...data.map(d => d.date).reverse()],
+            y: [...data.map(d => d.q90), ...data.map(d => d.q10).reverse()],
+            fill: 'toself',
+            fillcolor: 'rgba(59, 130, 246, 0.15)',
+            line: { color: 'transparent' },
+            name: 'Q10-Q90 Range',
+            showlegend: true
+        } : null;
+
+        // Observed (may have nulls)
+        const observedTrace = {
+            x: data.filter(d => d.observed !== null && d.observed !== undefined).map(d => d.date),
+            y: data.filter(d => d.observed !== null && d.observed !== undefined).map(d => d.observed),
+            mode: 'lines+markers',
+            name: 'Observed',
+            line: { color: '#22c55e', width: 2 },
+            marker: { color: '#22c55e', size: 8 }
+        };
+
+        const predictedTrace = {
+            x: data.map(d => d.date),
+            y: data.map(d => d.predicted),
+            mode: 'lines+markers',
+            name: 'Predicted',
+            line: { color: '#f97316', width: 2, dash: 'dot' },
+            marker: { color: '#f97316', size: 6 }
+        };
+
+        const traces = [];
+        if (bandTrace) traces.push(bandTrace);
+        traces.push(observedTrace);
+        traces.push(predictedTrace);
+document.getElementById("forecast-timeseries").innerHTML = "";
+document.getElementById("forecast-card-content").innerHTML = "";
+document.getElementById("forecast-table").innerHTML = "";
+
+        Plotly.newPlot('forecast-timeseries', traces, {
+            ...plotlyLayout,
+            title: { text: 'Forecast vs Observed', font: { color: '#e2e8f0', size: 14 } },
+            yaxis: { ...plotlyLayout.yaxis, title: 'Rainfall (mm)' }
+        }, plotlyConfig);
+
+        // Forecast card - guard if latest_forecast is missing
+        const latest = (forecastsData.latest_forecast && typeof forecastsData.latest_forecast === 'object') ? forecastsData.latest_forecast : null;
+        if (!latest) {
+            console.warn("latest_forecast missing; using last row of data instead.");
+            const last = data[data.length - 1];
+            document.getElementById('forecast-card-content').innerHTML = `
+                <div class="forecast-value">${Number(last.predicted || 0).toFixed(1)} mm</div>
+                <div class="forecast-label">Predicted for ${last.date || 'N/A'}</div>
+                <div class="quantile-range">
+                    <div class="quantile-item"><div class="quantile-value">${(last.q10||0).toFixed(1)}</div><div class="quantile-label">Q10</div></div>
+                    <div class="quantile-item"><div class="quantile-value">${(last.q90||0).toFixed(1)}</div><div class="quantile-label">Q90</div></div>
+                </div>
+            `;
+        } else {
+            // safe reads
+            const pred = Number(latest.predicted || latest.pred_next_day || 0);
+            const q10 = Number(latest.q10 || 0);
+            const q90 = Number(latest.q90 || 0);
+            const d = latest.date || (data[data.length-1] && data[data.length-1].date) || 'N/A';
+            document.getElementById('forecast-card-content').innerHTML = `
+                <div class="forecast-value">${pred.toFixed(1)} mm</div>
+                <div class="forecast-label">Predicted for ${d}</div>
+                <div class="quantile-range">
+                    <div class="quantile-item"><div class="quantile-value">${q10.toFixed(1)}</div><div class="quantile-label">Q10 (Low)</div></div>
+                    <div class="quantile-item"><div class="quantile-value">${q90.toFixed(1)}</div><div class="quantile-label">Q90 (High)</div></div>
+                </div>
+            `;
+        }
+
+        // Forecast table last 10
+        const latestRows = data.slice(-10).reverse();
+        document.getElementById('forecast-table').innerHTML = `
+            <table>
+                <thead><tr><th>Date</th><th>Observed</th><th>Predicted</th><th>Q10</th><th>Q90</th></tr></thead>
+                <tbody>
+                    ${latestRows.map(row => `
+                        <tr>
+                            <td>${row.date || ''}</td>
+                            <td>${row.observed !== null && row.observed !== undefined ? Number(row.observed).toFixed(1) + ' mm' : '—'}</td>
+                            <td>${Number(row.predicted||0).toFixed(1)} mm</td>
+                            <td>${Number(row.q10||0).toFixed(1)}</td>
+                            <td>${Number(row.q90||0).toFixed(1)}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+
+    } catch (e) {
+        console.error("renderForecastsCharts error:", e);
+        showError('forecast-timeseries', 'Failed to render forecasts charts. See console for details.');
+        document.getElementById('forecast-card-content').innerHTML = '<div class="error-message">Forecast rendering failed</div>';
+    }
+}
+
+        // CSV Download
+        function downloadCSV(type) {
+            let data, filename, headers;
+            
+            if (type === 'clusters' && clustersData) {
+                headers = ['date', 'rainfall', 'cluster', 'pc1', 'pc2'];
+                data = clustersData;
+                filename = 'clusters.csv';
+            } else if (type === 'anomalies' && anomaliesData) {
+                headers = ['date', 'rainfall', 'z_score', 'isolation_score', 'is_zscore_anomaly', 'is_isolation_anomaly'];
+                data = anomaliesData;
+                filename = 'anomalies.csv';
+            } else if (type === 'forecasts' && forecastsData) {
+                headers = ['date', 'observed', 'predicted', 'q10', 'q90'];
+                data = forecastsData.data;
+                filename = 'forecasts.csv';
+            } else {
+                alert('Data not loaded yet. Please wait for the data to load.');
+                return;
+            }
+
+            const csv = [
+                headers.join(','),
+                ...data.map(row => headers.map(h => row[h] ?? '').join(','))
+            ].join('\n');
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadClustersData();
+        });
+    </script>
+</body>
+</html>
